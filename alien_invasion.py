@@ -3,6 +3,7 @@ import pygame
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from alien import Alien
 
 
 class AlienInvasion:
@@ -25,6 +26,10 @@ class AlienInvasion:
         self.ship = Ship(self)
         # group of bullet's
         self.bullets = pygame.sprite.Group()
+        # group of aliens
+        self.aliens = pygame.sprite.Group()
+
+        self._create_fleet()
 
     def run_game(self):
         """Start the main loop for the game"""
@@ -77,7 +82,37 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
 
+        self.aliens.draw(self.screen)
+
         pygame.display.flip()
+
+    def _create_fleet(self):
+        """Create the fleet of aliens."""
+        # Create an alien and find the number of aliens in a row.
+        # Spacing between each alien is equal to one alien width.
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        available_space_x = self.settings.screen_width - (2 * alien_width)
+        number_alien_x = available_space_x // (2 * alien_width)
+
+        # Determine the number of rows of aliens that fit on the screen.
+        ship_height = self.ship.rect.height
+        available_space_y = self.settings.screen_heigth - (10 * alien_height) - ship_height
+        numer_rows = available_space_y // (2 * alien_height)
+
+        # Create the full row of aliens
+        for row_num in range(numer_rows):
+            for alien_num in range(number_alien_x):
+                self._create_alien(alien_num, row_num)
+
+    def _create_alien(self, alien_num, row_num):
+        """Create an alien and place it in the row."""
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        alien.x = alien_width + 2 * alien_width * alien_num
+        alien.rect.x = alien.x
+        alien.rect.y = alien_height + 2 * alien.rect.height * row_num
+        self.aliens.add(alien)
 
     def _update_bullets(self):
         """Update position of bullets and get rid of old bullets."""
